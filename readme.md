@@ -13,6 +13,6 @@ Uses a [Quartz-Scheduler](https://www.quartz-scheduler.net/) for executings sche
 *  Entity Framework Core (Context injection with Autofac)
 
 ## WebapiWinservice 
-Uses Asp.Net Core MVC for providing a RestApi
+Runs a kestrel server and uses Asp.Net Core MVC for providing a RestApi
 * Asp.Net Core MVC
 * Entity Framework Core (Context injection with Autofac)
