@@ -34,7 +34,7 @@
 ## Debugging
 **!!! Do not execute with IIS-Express !!!**
 
-![debugging](/uploads/326f82023ca11d96856c5bf987da635e/debugging.png)
+![debugging](https://raw.githubusercontent.com/inspgadget/TopshelfServiceExamples/master/Wiki/debug.jpg)
 
 ## Bootstrap.cs
 This class is for registrering the types for the dependency Injection.
