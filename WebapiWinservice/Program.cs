@@ -1,24 +1,24 @@
 ﻿using Autofac;
-using System;
 using Topshelf;
 using Topshelf.Autofac;
 using WebapiWinservice.Services;
 
 namespace WebapiWinservice
 {
-    class Program
+    internal static class Program
     {
-        static void Main(string[] args)
+        internal static void Main()
         {
-            IContainer container = Bootstrap.BuildContainer();
-            Settings settings = container.Resolve<Settings>();
+            var container = Bootstrap.BuildContainer();
+            var settings = container.Resolve<Settings>();
 
             HostFactory.Run(x =>
             {
                 x.SetServiceName("WebapiService");
                 x.SetDisplayName("WebapiService");
                 x.SetDescription("");
-                x.UseAutofacContainer(container);
+                x.UseAutofacContainer(container)
+                    ;
                 if (!string.IsNullOrWhiteSpace(settings.GetAppSetting("RunAsUser")))
                 {
                     x.RunAs(settings.GetAppSetting("RunAsUser"), settings.GetAppSetting("RunAsPassword"));
@@ -26,16 +26,8 @@ namespace WebapiWinservice
 
                 x.Service<WebapiService>(y =>
                 {
-                    y.ConstructUsingAutofacContainer();
-                    y.WhenStarted((service, control) =>
-                    {
-
-                        return service.Start().ConfigureAwait(false).GetAwaiter().GetResult();
-                    });
-                    y.WhenStopped((service, control) =>
-                    {
-                        return service.Stop().ConfigureAwait(false).GetAwaiter().GetResult();
-                    });
+                    y.WhenStarted(async service => await service.Start().ConfigureAwait(false));
+                    y.WhenStopped(async service => await service.Stop().ConfigureAwait(false));
                 });
             });
         }
