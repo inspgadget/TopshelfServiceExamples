@@ -19,6 +19,7 @@ namespace WebapiWinservice
                 x.SetDisplayName("WebapiService");
                 x.SetDescription("");
                 x.UseAutofacContainer(container);
+                
                 if (!string.IsNullOrWhiteSpace(settings.GetAppSetting("RunAsUser")))
                 {
                     x.RunAs(settings.GetAppSetting("RunAsUser"), settings.GetAppSetting("RunAsPassword"));
@@ -26,6 +27,7 @@ namespace WebapiWinservice
 
                 x.Service<WebapiService>(y =>
                 {
+                    y.ConstructUsingAutofacContainer();
                     y.WhenStarted(async service => await service.Start().ConfigureAwait(false));
                     y.WhenStopped(async service => await service.Stop().ConfigureAwait(false));
                 });

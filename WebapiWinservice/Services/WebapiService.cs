@@ -11,6 +11,10 @@ namespace WebapiWinservice.Services
     {
         private IHost _webHost;
 
+        public WebapiService()
+        {
+            
+        }
         public async Task<bool> Start()
         {
             _webHost = Host.CreateDefaultBuilder()
