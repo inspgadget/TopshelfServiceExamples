@@ -18,8 +18,7 @@ namespace WebapiWinservice
                 x.SetServiceName("WebapiService");
                 x.SetDisplayName("WebapiService");
                 x.SetDescription("");
-                x.UseAutofacContainer(container)
-                    ;
+                x.UseAutofacContainer(container);
                 if (!string.IsNullOrWhiteSpace(settings.GetAppSetting("RunAsUser")))
                 {
                     x.RunAs(settings.GetAppSetting("RunAsUser"), settings.GetAppSetting("RunAsPassword"));
