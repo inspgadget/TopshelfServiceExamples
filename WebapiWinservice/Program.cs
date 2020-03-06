@@ -1,4 +1,5 @@
-﻿using Autofac;
+﻿using System;
+using Autofac;
 using Topshelf;
 using Topshelf.Autofac;
 using WebapiWinservice.Services;
@@ -12,7 +13,7 @@ namespace WebapiWinservice
             var container = Bootstrap.BuildContainer();
             var settings = container.Resolve<Settings>();
 
-            HostFactory.Run(x =>
+            var exitCode = HostFactory.Run(x =>
             {
                 x.SetServiceName("WebapiService");
                 x.SetDisplayName("WebapiService");
@@ -30,6 +31,10 @@ namespace WebapiWinservice
                     y.WhenStopped(async service => await service.Stop().ConfigureAwait(false));
                 });
             });
+
+            //return correct exit code
+            var exitCodeValue = (int)Convert.ChangeType(exitCode, exitCode.GetTypeCode());
+            Environment.ExitCode = exitCodeValue;
         }
     }
 }
