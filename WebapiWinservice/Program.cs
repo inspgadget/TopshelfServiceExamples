@@ -1,8 +1,8 @@
 ﻿using System;
-using Autofac;
 using Topshelf;
 using Topshelf.Autofac;
 using WebapiWinservice.Services;
+using WebapiWinservice.Settings;
 
 namespace WebapiWinservice
 {
@@ -10,20 +10,19 @@ namespace WebapiWinservice
     {
         internal static void Main()
         {
-            var container = Bootstrap.BuildContainer();
-            var settings = container.Resolve<Settings>();
+            var container = Bootstrapper.Start();
 
             var exitCode = HostFactory.Run(x =>
             {
                 x.SetServiceName("WebapiService");
-                x.SetDisplayName("WebapiService");
-                x.SetDescription("");
+                x.SetDisplayName("Webapi Service");
+                x.SetDescription("Some fun stuff");
                 x.UseAutofacContainer(container);
-                
-                if (!string.IsNullOrWhiteSpace(settings.GetAppSetting("RunAsUser")))
-                {
-                    x.RunAs(settings.GetAppSetting("RunAsUser"), settings.GetAppSetting("RunAsPassword"));
-                }
+
+                var config = Bootstrapper.Resolve<WindowsServiceSettings>();
+
+                if (!string.IsNullOrWhiteSpace(config.RunAs))
+                    x.RunAs(config.RunAs, config.RunAsPassword);
 
                 x.Service<WebapiService>(y =>
                 {
@@ -32,6 +31,8 @@ namespace WebapiWinservice
                     y.WhenStopped(async service => await service.Stop().ConfigureAwait(false));
                 });
             });
+
+            Bootstrapper.Stop();
 
             //return correct exit code
             var exitCodeValue = (int)Convert.ChangeType(exitCode, exitCode.GetTypeCode());
