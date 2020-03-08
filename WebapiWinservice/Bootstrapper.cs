@@ -17,9 +17,11 @@ namespace WebapiWinservice
         {
             if (_rootScope != null) return _rootScope;
 
-            var builder = new ContainerBuilder();
-            Setup(builder);
-            _rootScope = builder.Build();
+            _rootScope = new ContainerBuilder()
+                .Config()
+                .Setup()
+                .Build();
+
             return _rootScope;
         }
         public static void Stop()
@@ -36,6 +38,26 @@ namespace WebapiWinservice
         }
 
 
+        public static ContainerBuilder Config(this ContainerBuilder builder)
+        {
+            var path = new FileInfo(Process.GetCurrentProcess().MainModule?.FileName ?? throw new Exception()).DirectoryName;
+            var environmentName = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+            builder.Register(x => 
+                    new ConfigurationBuilder()
+                        .SetBasePath(path)
+                        //.AddEnvironmentVariables("DOTNET_")
+                        .AddJsonFile("appsettings.json", false, true)
+                        .AddJsonFile($"appsettings.{environmentName}.json", true, true)
+                        //.AddUserSecrets(Assembly.GetEntryAssembly(), true, true)
+                        .AddEnvironmentVariables()
+                        //.AddEnvironmentVariables("MYOWNPREFIX_")
+                        .Build())
+                .As<IConfiguration>();
+            return builder;
+
+            //comment config stuff are examples for further configuration.
+        }
+
 
 
         /// <summary>
@@ -43,38 +65,27 @@ namespace WebapiWinservice
         /// (Webhost erzeugt eigenen Autofac Container)
         /// </summary>
         /// <param name="builder"></param>
-        public static void Setup(ContainerBuilder builder)
+        public static ContainerBuilder Setup(this ContainerBuilder builder)
         {
-            RegisterAllSettingsStuff(builder);
-            RegisterServices(builder);
-        }
-
-
-
-        private static void RegisterAllSettingsStuff(ContainerBuilder builder)
-        {
-            builder.Register(x => new ConfigurationBuilder()
-                .SetBasePath(new FileInfo(Process.GetCurrentProcess().MainModule?.FileName ?? Directory.GetCurrentDirectory()).DirectoryName)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .Build()).As<IConfiguration>();
-
+            //settings classes
             builder.RegisterAssemblyTypes(typeof(SettingsBase).Assembly)
                 .Where(t => t.IsSubclassOf(typeof(SettingsBase)))
                 .AsSelf();
-        }
-        private static void RegisterServices(ContainerBuilder builder)
-        {
+
             //winservice
             builder.RegisterType<WebapiService>();
 
             //other services
             builder.RegisterType<Ip2LocationService>();
-            // wird für das Abrufen der ClientIp benötigt - als Singleton registrieren
+            // needed to resolve ClientIp - register as Singleton
             builder.RegisterType<HttpContextAccessor>().As<IHttpContextAccessor>().SingleInstance();
-            // Context pro Request erzeugen (InstancePerLifetimeScope)
+            // Context per Request (InstancePerLifetimeScope)
             builder.RegisterType<ip2locationContext>().InstancePerLifetimeScope();
 
+            return builder;
         }
+
+
 
 
 
